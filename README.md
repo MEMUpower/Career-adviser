@@ -98,3 +98,5 @@ docker compose exec backend pytest tests/ -v
 2. 분석이 완료된 학생 레코드의 결과 대시보드 [http://localhost:3000/dashboard/[id]](http://localhost:3000/dashboard/[id]) 에 접속합니다.
 3. 상단 우측의 **[교사용 요약 리포트 (PDF) 발행]** 버튼을 클릭합니다.
 4. 백그라운드 Weasyprint 빌드가 완료된 후 활성화되는 **[PDF 리포트 다운로드]** 링크를 클릭하여 다운로드된 파일의 레이아웃과 학생 비식별화 여부를 PDF 뷰어로 검증합니다.
+
+Of Course, I used AI for this thing. Can't do it my own mate.
