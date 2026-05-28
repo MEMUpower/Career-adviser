@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --bg: #f8fafc;
+  --surface: rgba(255, 255, 255, 0.75);
+  --surface-border: rgba(226, 232, 240, 0.8);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --line: #e2e8f0;
+  --brand: #4f46e5;
+  --brand-glow: rgba(79, 70, 229, 0.15);
+  --brand-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --accent: #06b6d4;
+  --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --hover-shadow: 0 20px 40px -15px rgba(79, 70, 229, 0.1), 0 1px 5px rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="dark"] {
+  --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #060913 100%);
+  --bg: #060913;
+  --surface: rgba(15, 23, 42, 0.65);
+  --surface-border: rgba(255, 255, 255, 0.06);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --line: #1e293b;
+  --brand: #818cf8;
+  --brand-glow: rgba(129, 140, 248, 0.25);
+  --brand-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+  --accent: #22d3ee;
+  --accent-gradient: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
+  --hover-shadow: 0 20px 40px -15px rgba(129, 140, 248, 0.25), 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  color: var(--text);
+  background: var(--bg-gradient);
+  font-family: 'Plus Jakarta Sans', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  background-attachment: fixed;
+  letter-spacing: -0.01em;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px var(--brand-glow); }
+  50% { box-shadow: 0 0 25px rgba(129, 140, 248, 0.4); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Premium UI Elements */
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+  border-radius: 24px;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  box-shadow: var(--hover-shadow);
+  border-color: rgba(129, 140, 248, 0.15);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  transition: all 0.25s ease;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.neu-panel {
+  @extend .glass-panel;
+}
+
+/* Interactive Components */
+.neu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.neu-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.neu-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.neu-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.neu-brand {
+  background: var(--brand-gradient);
+  color: white !important;
+  border: none;
+  box-shadow: 0 4px 14px var(--brand-glow);
+}
+
+.neu-brand:hover:not(:disabled) {
+  background: var(--brand-gradient);
+  opacity: 0.95;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+}
+
+/* Helper Text Styles */
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Scrollbar customizations */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
