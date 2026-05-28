@@ -21,3 +21,4 @@ career-advisor_deploy_bundle.zip
 *.pptx
 *.pdf
 
+**/out/
