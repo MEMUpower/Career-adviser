@@ -1,16 +1,16 @@
 ﻿from __future__ import annotations
 
 from datetime import date
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Optional
 
 import httpx
 
-from app.core.logging import logger
 from app.config import settings
+from app.core.logging import logger
 
-CAREERNET_JSON_BASE = f"{settings.CAREERNET_BASE_URL.rstrip('/')}/cnet/openapi"
-CAREERNET_JOB_LIST_URL = f"{settings.CAREERNET_BASE_URL.rstrip('/')}/cnet/front/openapi/jobs.json"
-CAREERNET_JOB_DETAIL_URL = f"{settings.CAREERNET_BASE_URL.rstrip('/')}/cnet/front/openapi/job.json"
+CAREERNET_MAJOR_URL = f"{settings.CAREERNET_BASE_URL.rstrip('/')}/cnet/openapi/getOpenApi"
+CAREERNET_JOB_URL = f"{settings.CAREERNET_BASE_URL.rstrip('/')}/cnet/openapi/getOpenApi"
+CAREERNET_JOB_JSON_URL = f"{settings.CAREERNET_BASE_URL.rstrip('/')}/cnet/openapi/getOpenApi.json"
 
 
 def _get_json(url: str, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -20,21 +20,21 @@ def _get_json(url: str, params: Dict[str, Any]) -> Dict[str, Any]:
         return response.json()
 
 
-def _extract_list(payload: Dict[str, Any], root_key: str) -> List[Dict[str, Any]]:
-    value = payload.get(root_key)
-    if isinstance(value, list):
-        return value
-    if isinstance(value, dict):
-        content = value.get("content")
+def _extract_content_list(payload: Dict[str, Any], root_key: str) -> List[Dict[str, Any]]:
+    container = payload.get(root_key)
+    if isinstance(container, dict):
+        content = container.get("content")
         if isinstance(content, list):
             return content
         if isinstance(content, dict):
             return [content]
+    if isinstance(container, list):
+        return container
     return []
 
 
-def _first_item(payload: Dict[str, Any], root_key: str) -> Dict[str, Any]:
-    items = _extract_list(payload, root_key)
+def _first_content(payload: Dict[str, Any], root_key: str) -> Dict[str, Any]:
+    items = _extract_content_list(payload, root_key)
     return items[0] if items else {}
 
 
@@ -55,8 +55,8 @@ def fetch_careernet_major_list(search_title: Optional[str] = None, gubun: str = 
     if search_title:
         params["searchTitle"] = search_title
 
-    payload = _get_json(CAREERNET_JSON_BASE, params)
-    return _extract_list(payload, "dataSearch")
+    payload = _get_json(CAREERNET_MAJOR_URL, params)
+    return _extract_content_list(payload, "dataSearch")
 
 
 def fetch_careernet_major_detail(major_seq: str, gubun: str = "대학교") -> Dict[str, Any]:
@@ -74,8 +74,8 @@ def fetch_careernet_major_detail(major_seq: str, gubun: str = "대학교") -> Di
         "majorSeq": major_seq,
     }
 
-    payload = _get_json(CAREERNET_JSON_BASE, params)
-    return _first_item(payload, "dataSearch")
+    payload = _get_json(CAREERNET_MAJOR_URL, params)
+    return _first_content(payload, "dataSearch")
 
 
 def fetch_careernet_job_list(search_job_nm: Optional[str] = None, search_theme_code: Optional[str] = None, search_aptd_codes: Optional[str] = None, search_job_cd: Optional[str] = None, page_index: int = 1) -> List[Dict[str, Any]]:
@@ -86,6 +86,10 @@ def fetch_careernet_job_list(search_job_nm: Optional[str] = None, search_theme_c
 
     params: Dict[str, Any] = {
         "apiKey": settings.CAREERNET_API_KEY,
+        "svcType": "api",
+        "svcCode": "JOB",
+        "contentType": "json",
+        "gubun": "job_dic_list",
         "pageIndex": page_index,
     }
     if search_job_nm:
@@ -97,8 +101,15 @@ def fetch_careernet_job_list(search_job_nm: Optional[str] = None, search_theme_c
     if search_job_cd:
         params["searchJobCd"] = search_job_cd
 
-    payload = _get_json(CAREERNET_JOB_LIST_URL, params)
-    return payload.get("jobs", []) if isinstance(payload.get("jobs"), list) else []
+    payload = _get_json(CAREERNET_JOB_JSON_URL, params)
+    # The JSON shape can vary slightly across endpoints; normalize common containers.
+    jobs = _extract_content_list(payload, "jobs")
+    if jobs:
+        return jobs
+    jobs = _extract_content_list(payload, "dataSearch")
+    if jobs:
+        return jobs
+    return payload.get("list", []) if isinstance(payload.get("list"), list) else []
 
 
 def fetch_careernet_job_detail(seq: str) -> Dict[str, Any]:
@@ -109,15 +120,20 @@ def fetch_careernet_job_detail(seq: str) -> Dict[str, Any]:
 
     params = {
         "apiKey": settings.CAREERNET_API_KEY,
+        "svcType": "api",
+        "svcCode": "JOB_VIEW",
+        "contentType": "json",
         "seq": seq,
     }
 
-    payload = _get_json(CAREERNET_JOB_DETAIL_URL, params)
+    payload = _get_json(CAREERNET_JOB_JSON_URL, params)
     if isinstance(payload, dict):
         if "job" in payload and isinstance(payload["job"], dict):
             return payload["job"]
         if "baseInfo" in payload or "forecastList" in payload:
             return payload
+        if "dataSearch" in payload:
+            return _first_content(payload, "dataSearch")
     return payload if isinstance(payload, dict) else {}
 
 
@@ -138,7 +154,8 @@ def build_public_metric_sources() -> List[Dict[str, Any]]:
             if not major_list:
                 continue
 
-            major_seq = str(major_list[0].get("majorSeq", "")).strip()
+            major_item = major_list[0]
+            major_seq = str(major_item.get("majorSeq", "")).strip()
             detail = fetch_careernet_major_detail(major_seq) if major_seq else {}
 
             sources.append(
@@ -148,14 +165,14 @@ def build_public_metric_sources() -> List[Dict[str, Any]]:
                     "key_name": major_name,
                     "data": {
                         "major_seq": major_seq,
-                        "l_class": major_list[0].get("lClass"),
-                        "m_class": major_list[0].get("mClass"),
-                        "facil_name": major_list[0].get("facilName"),
-                        "employment_rate": detail.get("employment"),
-                        "salary": detail.get("salary"),
-                        "summary": detail.get("summary"),
-                        "related_jobs": detail.get("job"),
-                        "related_qualifications": detail.get("qualifications"),
+                        "l_class": major_item.get("lClass"),
+                        "m_class": major_item.get("mClass"),
+                        "facil_name": major_item.get("facilName"),
+                        "employment_rate": detail.get("employment") or detail.get("employmentRate"),
+                        "salary": detail.get("salary") or detail.get("avgSalary"),
+                        "summary": detail.get("summary") or detail.get("majorSummary"),
+                        "related_jobs": detail.get("job") or detail.get("relJob"),
+                        "related_qualifications": detail.get("qualifications") or detail.get("license"),
                     },
                     "reference_year": date.today(),
                 }
@@ -179,7 +196,7 @@ def build_public_metric_sources() -> List[Dict[str, Any]]:
                 continue
 
             job_item = job_list[0]
-            job_seq = str(job_item.get("job_cd") or job_item.get("seq") or "").strip()
+            job_seq = str(job_item.get("jobdicSeq") or job_item.get("seq") or job_item.get("job_cd") or "").strip()
             detail = fetch_careernet_job_detail(job_seq) if job_seq else {}
 
             sources.append(
@@ -189,15 +206,15 @@ def build_public_metric_sources() -> List[Dict[str, Any]]:
                     "key_name": target["name"],
                     "data": {
                         "job_cd": job_seq,
-                        "job_nm": job_item.get("job_nm"),
-                        "top_nm": job_item.get("top_nm") or job_item.get("tob_nm"),
-                        "aptit_name": job_item.get("aptit_name"),
+                        "job_nm": job_item.get("jobNm") or job_item.get("job_nm"),
+                        "top_nm": job_item.get("topNm") or job_item.get("top_nm"),
+                        "aptit_name": job_item.get("aptitName") or job_item.get("aptit_name"),
                         "work": detail.get("workList") or job_item.get("work"),
                         "forecast": detail.get("forecastList"),
                         "wage": detail.get("wage") or job_item.get("wage"),
                         "related_jobs": detail.get("rel_job_nm") or job_item.get("rel_job_nm"),
-                        "summary": detail.get("baseInfo", {}).get("summary") if isinstance(detail.get("baseInfo"), dict) else None,
-                        "curriculum": detail.get("jobReadyList", {}).get("curriculum") if isinstance(detail.get("jobReadyList"), dict) else None,
+                        "summary": (detail.get("baseInfo") or {}).get("summary") if isinstance(detail.get("baseInfo"), dict) else None,
+                        "curriculum": (detail.get("jobReadyList") or {}).get("curriculum") if isinstance(detail.get("jobReadyList"), dict) else None,
                     },
                     "reference_year": date.today(),
                 }
