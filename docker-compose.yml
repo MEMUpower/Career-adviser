@@ -39,9 +39,13 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/career_advisor
       - REDIS_URL=redis://redis:6379/0
-      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_PROVIDER=${LLM_PROVIDER:-nvidia_nim}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      - NVIDIA_NIM_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      - NVIDIA_NIM_MODEL=${NVIDIA_NIM_MODEL:-minimaxai/minimax-m2.7}
+      - CAREERNET_API_KEY=${CAREERNET_API_KEY}
+      - CAREERNET_BASE_URL=${CAREERNET_BASE_URL:-https://www.career.go.kr}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       - JWT_SECRET=${JWT_SECRET:-supersecretjwtkeyforcareeradvisorappmvp2026}
       - UPLOAD_DIR=/app/uploads
@@ -67,9 +71,13 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/career_advisor
       - REDIS_URL=redis://redis:6379/0
-      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_PROVIDER=${LLM_PROVIDER:-nvidia_nim}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      - NVIDIA_NIM_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      - NVIDIA_NIM_MODEL=${NVIDIA_NIM_MODEL:-minimaxai/minimax-m2.7}
+      - CAREERNET_API_KEY=${CAREERNET_API_KEY}
+      - CAREERNET_BASE_URL=${CAREERNET_BASE_URL:-https://www.career.go.kr}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       - JWT_SECRET=${JWT_SECRET:-supersecretjwtkeyforcareeradvisorappmvp2026}
       - UPLOAD_DIR=/app/uploads
@@ -94,8 +102,13 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/career_advisor
       - REDIS_URL=redis://redis:6379/0
-      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_PROVIDER=${LLM_PROVIDER:-nvidia_nim}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      - NVIDIA_NIM_BASE_URL=${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      - NVIDIA_NIM_MODEL=${NVIDIA_NIM_MODEL:-minimaxai/minimax-m2.7}
+      - CAREERNET_API_KEY=${CAREERNET_API_KEY}
+      - CAREERNET_BASE_URL=${CAREERNET_BASE_URL:-https://www.career.go.kr}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       - JWT_SECRET=${JWT_SECRET:-supersecretjwtkeyforcareeradvisorappmvp2026}
     volumes:

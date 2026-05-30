@@ -22,3 +22,5 @@ career-advisor_deploy_bundle.zip
 *.pdf
 
 **/out/
+backend/celerybeat-schedule
+**/celerybeat-schedule
